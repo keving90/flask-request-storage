@@ -18,7 +18,11 @@ def before_request():
 def home():
     # Save request data in the DB
     query = 'INSERT INTO request ("url", "method") VALUES (:url, :method);'
-    # Insert your code here.
+
+    g.db.execute(query, {'url': request.url, 'method': request.method})
+    g.db.commit()
+    g.db.close()
+    
     # get the URL and the method and store it in the Database
     return 'Success', 200
 
@@ -38,16 +42,29 @@ def dashboard():
             <h3>DELETE requests: {{total_per_method['DELETE']}}</h3>
         </html>
     """
+    
+    c = g.db.cursor()
+    c.execute(query)
+    
     # build these dictionaries out of the data retrieved from the database
-    total_requests = -1
-    total_per_method = {
-        'GET': -1,
-        'POST': -1,
-        'PUT': -1,
-        'PATCH': -1,
-        'DELETE': -1,
-    }
+    all_records = c.fetchall()
+    total_requests = len(all_records)
 
+    total_per_method = {
+        'GET': 0,
+        'POST': 0,
+        'PUT': 0,
+        'PATCH': 0,
+        'DELETE': 0,
+    }
+    
+    for record in all_records:
+        request_type = str(record[1])
+        if request_type in total_per_method:
+            total_per_method[request_type] += 1
+    
+    g.db.close()
+    
     return render_template_string(
         base_html,
         total_requests=total_requests,
