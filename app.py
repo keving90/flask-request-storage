@@ -57,7 +57,8 @@ def dashboard():
         'PATCH': 0,
         'DELETE': 0,
     }
-    
+
+    # Increment the dictionary's key for the corresponding request type    
     for record in all_records:
         request_type = str(record[1])
         if request_type in total_per_method:
